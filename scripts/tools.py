@@ -103,3 +103,6 @@ def save_model(model, model_path):
 
 def load_model(model_path):
     return joblib.load(model_path) 
+
+def compute_auc(y_true, y_pred):
+	return AUC(y_true, y_pred)

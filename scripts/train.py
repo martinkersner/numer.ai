@@ -6,16 +6,28 @@ Martin Kersner, m.kersner@gmail.com
 '''
 
 from tools import *
+import pandas as pd
+
 from sklearn import cross_validation as CV
-from sklearn.linear_model import LogisticRegression as LR
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.pipeline import Pipeline
-import pandas as pd
 
+# classifiers
+from sklearn.linear_model import LogisticRegression as LR
+from sklearn.ensemble import ExtraTreesClassifier as ET
+from sklearn.ensemble import RandomForestClassifier as RF
+from sklearn.ensemble import AdaBoostClassifier as AB
+from sklearn.ensemble import GradientBoostingClassifier as GB
+
+# preprocessing
 from sklearn.preprocessing import Normalizer
 from sklearn.preprocessing import StandardScaler
 #from sklearn.preprocessing import MaxAbsScaler, RobustScaler
+
+from sklearn.cross_validation import train_test_split
+from sklearn.grid_search import GridSearchCV
+from sklearn.metrics import classification_report
 
 from xgb import train_xgb, train_val_xgb, predict_xgb, save_model_xgb
 
@@ -27,7 +39,13 @@ def main():
     settings['train_val_csv'] = '../data/train_val_v_num.csv'
     settings['test_csv']      = '../data/tour_v_num.csv'
 
-    settings['model']  = LR()
+    rf_tuned_parameters = [{'n_estimators': [1000, 1500, 2000]}]
+
+    settings['n_jobs_gs'] = 4 # number of jobs employed for grid search
+    settings['model']  = RF(n_jobs=4)
+    #settings['model']  = GB()
+    settings['tuned_parameters'] = rf_tuned_parameters
+
     settings['transformers']  = [Pipeline([ ('poly', PolynomialFeatures()), ('scaler', MinMaxScaler()) ])]
 
     xgb_settings = {}
@@ -41,9 +59,12 @@ def main():
                   'eval_metric': 'auc'}
     xgb_settings['params'] = xgb_params
     
-    #do_train_test(settings)
     #do_train_val(settings)
-    do_train_val_xgb(settings, xgb_settings)
+    #do_train_test(settings)
+
+    do_train_val_gs(settings)
+
+    #do_train_val_xgb(settings, xgb_settings)
     #do_train_test_xgb(settings, xgb_settings)
 
 def do_train_val_xgb(settings, xgb_settings):
@@ -82,7 +103,28 @@ def do_train_val(settings):
         X_train_val_new = transformer.fit_transform(X_train_val)
         scores = CV.cross_val_score(model, X_train_val_new, y_train_val, scoring = 'roc_auc', cv = 10, verbose = 1)	
 
-        print "mean AUC: {:.2%}, std: {:.2%} \n".format(scores.mean(), scores.std())
+        print "%0.3f (+/-%0.03f)\n".format(scores.mean(), scores.std()*2)
+
+def do_train_val_gs(settings):
+    train_val = load_data(settings['train_val_csv'])
+    model = settings['model']
+    transformers = settings['transformers']
+    tuned_parameters = settings['tuned_parameters']
+    n_jobs = settings['n_jobs_gs']
+
+    y, X = split2yX(train_val)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
+
+    clf = GridSearchCV(model, tuned_parameters, cv=5, scoring='roc_auc', n_jobs=n_jobs, verbose=True)
+    clf.fit(X_train, y_train)
+
+    print clf.best_params_
+    for params, mean_score, scores in clf.grid_scores_:
+        print("%0.3f (+/-%0.03f) for %r" % (mean_score, scores.std()*2, params))
+
+    y_true, y_pred = y_test, clf.predict(X_test)
+    auc = compute_auc(y_true, y_pred)
+    print auc
 
 def do_train_test(settings):
     train, test = load_data(settings['train_val_csv'], settings['test_csv'])
