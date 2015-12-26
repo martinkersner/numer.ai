@@ -26,11 +26,15 @@ def train_xgb(y_train, X_train, settings):
 def train_val_xgb(y_train, X_train, y_val, X_val, settings):
     dtrain = init_xgb_train_data(y_train, X_train)
     dtest  = init_xgb_train_data(y_val, X_val)
-    evallist  = [(dtest, 'eval'), (dtrain, 'train')]
+    evallist = [(dtest, 'eval'), (dtrain, 'train')]
 
     num_round = settings['num_round']
     plst = settings['params'].items()
-    bst = xgb.train(plst, dtrain, num_round, evallist)
+
+    if settings['early_stop']:
+        bst = xgb.train(plst, dtrain, num_round, evallist, early_stopping_rounds=settings['early_stop'])
+    else:
+        bst = xgb.train(plst, dtrain, num_round, evallist)
 
     return bst
 

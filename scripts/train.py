@@ -31,7 +31,8 @@ def main():
     settings['transformers']  = [Pipeline([ ('poly', PolynomialFeatures()), ('scaler', MinMaxScaler()) ])]
 
     xgb_settings = {}
-    xgb_settings['num_round'] = 10
+    xgb_settings['num_round'] = 100
+    xgb_settings['early_stop'] = 0
     xgb_params = {'bst:max_depth': 2, 
                   'bst:eta': 1, 
                   'silent': 1, 
