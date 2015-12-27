@@ -106,3 +106,16 @@ def load_model(model_path):
 
 def compute_auc(y_true, y_pred):
 	return AUC(y_true, y_pred)
+
+def extract_categorical_subset(data, name_field):
+    categorical_col_names = ['c1_1',  'c1_10', 'c1_11', 'c1_12', 'c1_13', 'c1_14',
+                             'c1_15', 'c1_16', 'c1_17', 'c1_18', 'c1_19', 'c1_20',
+                             'c1_21', 'c1_22', 'c1_23', 'c1_24', 'c1_3',  'c1_4',
+                             'c1_5',  'c1_6',  'c1_7',  'c1_8',  'c1_9']
+    categorical_col_names.remove(name_field)
+
+    index = data[name_field] == 1
+    subset = data[index].copy()
+    subset = subset.drop(categorical_col_names, axis = 1)
+
+    return subset

@@ -39,12 +39,13 @@ def main():
     settings['train_val_csv'] = '../data/train_val_v_num.csv'
     settings['test_csv']      = '../data/tour_v_num.csv'
 
-    rf_tuned_parameters = [{'n_estimators': [1000, 1500, 2000]}]
+    rf_tuned_parameters = [{'criterion': ['entropy'], 'n_estimators': [1000]}]
 
     settings['n_jobs_gs'] = 4 # number of jobs employed for grid search
     settings['model']  = RF(n_jobs=4)
     #settings['model']  = GB()
     settings['tuned_parameters'] = rf_tuned_parameters
+    settings['subset'] = 'c1_1'
 
     settings['transformers']  = [Pipeline([ ('poly', PolynomialFeatures()), ('scaler', MinMaxScaler()) ])]
 
@@ -67,6 +68,7 @@ def main():
     #do_train_val_xgb(settings, xgb_settings)
     #do_train_test_xgb(settings, xgb_settings)
 
+###############################################################################
 def do_train_val_xgb(settings, xgb_settings):
     train, val = load_data(settings['train_csv'], settings['val_csv'])
     y_train, X_train = split2yX(train)
@@ -74,6 +76,7 @@ def do_train_val_xgb(settings, xgb_settings):
 
     train_val_xgb(y_train, X_train, y_val, X_val, xgb_settings)
 
+###############################################################################
 def do_train_test_xgb(settings, xgb_settings):
     train_val, test = load_data(settings['train_val_csv'], settings['test_csv'])
     y_train_val, X_train_val = split2yX(train_val)
@@ -90,6 +93,7 @@ def do_train_test_xgb(settings, xgb_settings):
     submission.to_csv(submission_path, columns = ('t_id', 'probability'), index = False)
     save_model_xgb(model, model_path)
 
+###############################################################################
 def do_train_val(settings):
     train_val = load_data(settings['train_val_csv'])
     model = settings['model']
@@ -105,8 +109,12 @@ def do_train_val(settings):
 
         print "%0.3f (+/-%0.03f)\n".format(scores.mean(), scores.std()*2)
 
+###############################################################################
 def do_train_val_gs(settings):
     train_val = load_data(settings['train_val_csv'])
+    if settings['subset']:
+        train_val = extract_categorical_subset(train_val, settings['subset'])
+
     model = settings['model']
     transformers = settings['transformers']
     tuned_parameters = settings['tuned_parameters']
@@ -126,6 +134,7 @@ def do_train_val_gs(settings):
     auc = compute_auc(y_true, y_pred)
     print auc
 
+###############################################################################
 def do_train_test(settings):
     train, test = load_data(settings['train_val_csv'], settings['test_csv'])
     model = settings['model']
