@@ -13,6 +13,11 @@ from sklearn.metrics import accuracy_score as accuracy
 from time import time
 from sklearn.externals import joblib
 
+def blend(*args, **kwargs):
+    pass
+    #submission = pd.DataFrame({'t_id': id_test, 'probability': y_pred.T})
+    #a = [pd.read_csv(data).probability for data in args]
+
 def load_data(*args, **kwargs):
     if len(args) > 1:
         return [pd.read_csv(data) for data in args]
@@ -112,7 +117,6 @@ def extract_categorical_subset(data, name_field):
                              'c1_15', 'c1_16', 'c1_17', 'c1_18', 'c1_19', 'c1_20',
                              'c1_21', 'c1_22', 'c1_23', 'c1_24', 'c1_3',  'c1_4',
                              'c1_5',  'c1_6',  'c1_7',  'c1_8',  'c1_9']
-    categorical_col_names.remove(name_field)
 
     index = data[name_field] == 1
     subset = data[index].copy()
