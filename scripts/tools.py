@@ -112,14 +112,30 @@ def load_model(model_path):
 def compute_auc(y_true, y_pred):
 	return AUC(y_true, y_pred)
 
+def get_categorical_col_names():
+    col_names = ['c1_1',  'c1_10', 'c1_11', 'c1_12', 'c1_13', 'c1_14',
+                 'c1_15', 'c1_16', 'c1_17', 'c1_18', 'c1_19', 'c1_20',
+                 'c1_21', 'c1_22', 'c1_23', 'c1_24', 'c1_3',  'c1_4',
+                 'c1_5',  'c1_6',  'c1_7',  'c1_8',  'c1_9']
+
+    return col_names
+
 def extract_categorical_subset(data, name_field):
-    categorical_col_names = ['c1_1',  'c1_10', 'c1_11', 'c1_12', 'c1_13', 'c1_14',
-                             'c1_15', 'c1_16', 'c1_17', 'c1_18', 'c1_19', 'c1_20',
-                             'c1_21', 'c1_22', 'c1_23', 'c1_24', 'c1_3',  'c1_4',
-                             'c1_5',  'c1_6',  'c1_7',  'c1_8',  'c1_9']
+    categorical_col_names = get_categorical_col_names()
 
     index = data[name_field] == 1
     subset = data[index].copy()
     subset = subset.drop(categorical_col_names, axis = 1)
 
     return subset
+
+def print_cv_score(clf):
+    '''
+    As input expect ouput of GridSearchCV
+    '''
+    for params, mean_score, scores in clf.grid_scores_:
+        print("%0.3f (+/-%0.03f) for %r" % (mean_score, scores.std()*2, params))
+
+def print_cv_best(clf):
+    print clf.best_params_
+    print clf.best_score_

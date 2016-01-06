@@ -32,28 +32,43 @@ from sklearn.metrics import classification_report
 from xgb import train_xgb, train_val_xgb, predict_xgb, save_model_xgb
 
 def main():
+    ## SETTINGS ################################################################
     settings = {}
+    settings['verbose'] = False
+
     settings['train_csv']     = '../data/train_v_num.csv'
     settings['val_csv']       = '../data/val_v_num.csv'
     
     settings['train_val_csv'] = '../data/train_val_v_num.csv'
     settings['test_csv']      = '../data/tour_v_num.csv'
 
-    rf_tuned_parameters = [{'criterion': ['entropy'], 'n_estimators': [1000]}]
+    n_jobs = 4 
 
-    settings['n_jobs_gs'] = 4 # number of jobs employed for grid search
-    settings['model']  = RF(n_jobs=4)
-    #settings['model']  = GB()
-    settings['tuned_parameters'] = rf_tuned_parameters
-    settings['subset'] = 'c1_1'
+    settings['parameters'] = [{
+        'rf__criterion': ['entropy'], 
+        'rf__n_estimators': [2000],
+        'rf__n_jobs': [n_jobs]
+        }]
 
-    settings['transformers']  = [Pipeline([ ('poly', PolynomialFeatures()), ('scaler', MinMaxScaler()) ])]
+    settings['subset'] = None
 
+    #settings['transformers']  = [Pipeline([ ('poly', PolynomialFeatures()), ('scaler', MinMaxScaler()) ])]
+
+    settings['grid_pipeline'] = Pipeline([
+        ('poly', PolynomialFeatures()),
+        #('scaler', MinMaxScaler()), 
+        ('rf', RF())
+        ])
+
+    ## XGB SETTINGS ############################################################
     xgb_settings = {}
-    xgb_settings['num_round'] = 100
+    xgb_settings['num_round'] = 20
     xgb_settings['early_stop'] = 0
-    xgb_params = {'bst:max_depth': 2, 
-                  'bst:eta': 1, 
+    xgb_params = {'bst:max_depth': 4, 
+                  'bst:eta': 0.1, 
+                  'bst:gamma': 1,
+                  'bst:min_child_weight': 0.5,
+                  'bst:max_delta_step': 0.2,
                   'silent': 1, 
                   'objective': 'binary:logistic',
                   'nthread': 4,
@@ -63,10 +78,17 @@ def main():
     #do_train_val(settings)
     #do_train_test(settings)
 
-    do_train_val_gs(settings)
+    #do_train_val_gs(settings)
 
     #do_train_val_xgb(settings, xgb_settings)
     #do_train_test_xgb(settings, xgb_settings)
+
+    do_class_specific_train_val(settings)
+
+    #a = pd.read_csv('../submissions/1451190098.csv')
+    #b = pd.read_csv('../submissions/1451190463.csv').probability
+    #a.probability = (a.probability + b) / 2.0
+    #a.to_csv('../submissions/a.csv', columns = ('t_id', 'probability'), index = False)
 
 ###############################################################################
 def do_train_val_xgb(settings, xgb_settings):
@@ -110,29 +132,45 @@ def do_train_val(settings):
         print "%0.3f (+/-%0.03f)\n".format(scores.mean(), scores.std()*2)
 
 ###############################################################################
+def do_class_specific_train_val(settings):
+    col_names = get_categorical_col_names()
+    #col_names = ['c1_1', 'c1_10']
+    #col_names = ['c1_1']
+
+    for col in col_names:
+        print col
+        settings['subset'] = col
+        do_train_val_gs(settings)
+
+###############################################################################
 def do_train_val_gs(settings):
     train_val = load_data(settings['train_val_csv'])
     if settings['subset']:
         train_val = extract_categorical_subset(train_val, settings['subset'])
 
-    model = settings['model']
-    transformers = settings['transformers']
-    tuned_parameters = settings['tuned_parameters']
-    n_jobs = settings['n_jobs_gs']
+    #model = settings['model']
+    #transformers = settings['transformers']
+    #tuned_parameters = settings['tuned_parameters']
+    #print tuned_parameters
 
     y, X = split2yX(train_val)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
+    #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
 
-    clf = GridSearchCV(model, tuned_parameters, cv=5, scoring='roc_auc', n_jobs=n_jobs, verbose=True)
-    clf.fit(X_train, y_train)
+    clf = GridSearchCV(settings['grid_pipeline'], 
+                       settings['parameters'], 
+                       verbose=settings['verbose'], 
+                       scoring='roc_auc', 
+                       cv=5, 
+                       n_jobs=1)
 
-    print clf.best_params_
-    for params, mean_score, scores in clf.grid_scores_:
-        print("%0.3f (+/-%0.03f) for %r" % (mean_score, scores.std()*2, params))
+    clf.fit(X, y)
 
-    y_true, y_pred = y_test, clf.predict(X_test)
-    auc = compute_auc(y_true, y_pred)
-    print auc
+    print_cv_best(clf)
+    #print_cv_score(clf)
+
+    #y_true, y_pred = y_test, clf.predict(X_test)
+    #auc = compute_auc(y_true, y_pred)
+    #print auc
 
 ###############################################################################
 def do_train_test(settings):
@@ -158,9 +196,6 @@ def do_train_test(settings):
 
         test.to_csv(submission_path, columns = ('t_id', 'probability'), index = False)
         save_model(model, model_path)
-
-def blend():
-    pass
 
 if __name__ == '__main__':
     main()
