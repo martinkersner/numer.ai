@@ -5,8 +5,6 @@ Martin Kersner, m.kersner@gmail.com
 2015/12/25
 '''
 
-import os
-
 from tools import *
 import pandas as pd
 
@@ -39,18 +37,18 @@ def main():
     settings['verbose'] = False
 
     settings['id'] = '201601'
-    settings['train_orig_data'] = os.path.join('../data/', settings['id'], 'orig/numerai_training_data.csv')
-    settings['tour_orig_data'] = os.path.join('../data/', settings['id'], 'orig/numerai_tournament_data.csv')
+    settings['train_orig_data'] = path_join('../data/', settings['id'], 'orig/numerai_training_data.csv')
+    settings['tour_orig_data']  = path_join('../data/', settings['id'], 'orig/numerai_tournament_data.csv')
 
-    load_from_orig_data(settings['train_orig_data'], save_id=settings['id'])
-    load_tournament_data(settings['tour_orig_data'], save_id=settings['id'])
-    exit()
+    #load_from_orig_data(settings['train_orig_data'], save_id=settings['id'])
+    #load_tournament_data(settings['tour_orig_data'], save_id=settings['id'])
+    #exit()
 
-    settings['train_csv']     = os.path.join('../data/', settings['id'], 'train_v_num.csv')
-    settings['val_csv']       = os.path.join('../data/', settings['id'], 'val_v_num.csv')
+    settings['train_csv']     = path_join('../data/', settings['id'], 'train_v_num.csv')
+    settings['val_csv']       = path_join('../data/', settings['id'], 'val_v_num.csv')
     
-    settings['train_val_csv'] = os.path.join('../data/', settings['id'], 'train_val_v_num.csv')
-    settings['test_csv']      = os.path.join('../data/', settings['id'], 'tour_v_num.csv')
+    settings['train_val_csv'] = path_join('../data/', settings['id'], 'train_val_v_num.csv')
+    settings['test_csv']      = path_join('../data/', settings['id'], 'tour_v_num.csv')
 
     n_jobs = 4 
 
@@ -90,8 +88,8 @@ def main():
 
     #do_train_val_gs(settings)
 
-    do_train_val_xgb(settings, xgb_settings)
-    #do_train_test_xgb(settings, xgb_settings)
+    #do_train_val_xgb(settings, xgb_settings)
+    do_train_test_xgb(settings, xgb_settings)
 
     #do_class_specific_train_val(settings)
 

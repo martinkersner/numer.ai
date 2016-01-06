@@ -142,3 +142,6 @@ def print_cv_score(clf):
 def print_cv_best(clf):
     print clf.best_params_
     print clf.best_score_
+
+def path_join(*path):
+  return os.path.join(*path)
