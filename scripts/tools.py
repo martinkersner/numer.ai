@@ -7,6 +7,7 @@ Martin Kersner, m.kersner@gmail.com
 inspired by https://github.com/zygmuntz/numer.ai
 '''
 
+import os
 import pandas as pd
 from sklearn.metrics import roc_auc_score as AUC
 from sklearn.metrics import accuracy_score as accuracy
@@ -24,7 +25,7 @@ def load_data(*args, **kwargs):
     else:
         return pd.read_csv(args[0])
 
-def load_from_orig_data(file_name, save=False):
+def load_from_orig_data(file_name, save_id=None):
     d = pd.read_csv(file_name)
     
     # indices for validation examples
@@ -53,24 +54,26 @@ def load_from_orig_data(file_name, save=False):
     val_dummies = pd.get_dummies(val.c1)
     val_num = pd.concat((val.drop('c1', axis = 1), val_dummies.astype(int)), axis = 1)
 
-    if save:
-        pandas_df2csv(train,      'data/train_v.csv')
-        pandas_df2csv(val,        'data/val_v.csv')
+    if save_id:
+        pandas_df2csv(train,      os.path.join('../data/', save_id, 'train_v.csv'))
+        pandas_df2csv(val,        os.path.join('../data/', save_id, 'val_v.csv'))
 
-        pandas_df2csv(train_num,  'data/train_v_num.csv')
-        pandas_df2csv(val_num,    'data/val_v_num.csv')
+        pandas_df2csv(train_num,  os.path.join('../data/', save_id, 'train_v_num.csv'))
+        pandas_df2csv(val_num,    os.path.join('../data/', save_id, 'val_v_num.csv'))
+
+        pandas_df2csv(pd.concat([train_num, val_num]), os.path.join('../data/', save_id, 'train_val_v_num.csv'))
 
     return train_num, val_num 
 
-def load_tournament_data(file_name, save=False):
+def load_tournament_data(file_name, save_id=None):
     t = pd.read_csv(file_name)
     
     # encode the categorical variable as one-hot, drop the original column afterwards
     t_dummies = pd.get_dummies(t.c1)
     t_num = pd.concat((t.drop('c1', axis = 1), t_dummies.astype(int)), axis = 1)
 
-    if save:
-        pandas_df2csv(t_num, 'data/tour_v_num.csv')
+    if save_id:
+        pandas_df2csv(t_num, os.path.join('../data/', save_id, 'tour_v_num.csv'))
 
     return t_num
 
