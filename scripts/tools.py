@@ -15,14 +15,28 @@ from time import time
 from sklearn.externals import joblib
 
 def blend(*args, **kwargs):
-    #submission = pd.DataFrame({'t_id': id_test, 'probability': y_pred.T})
-    #a = [pd.read_csv(data).probability for data in args]
+  '''
+  blend("sub1.csv", "sub2.csv", "sub3.csv", ..., "blend_sub.csv")
+  Blend given submission files and create new submission.
+  Output submission score is computed as mean of all given scores in submission files.
+
+  TODO control of ID of row before blending
+  '''
+  submission = pd.read_csv(args[0])
+  num_submissions = len(args) - 1
+
+  for submission_file in args[1:-1]:
+    tmp_probability = pd.read_csv(submission_file).probability
+    submission.probability += tmp_probability
+
+  submission.probability /= num_submissions
+  submission.to_csv(args[-1], columns = ('t_id', 'probability'), index = False)
 
 def load_data(*args, **kwargs):
-    if len(args) > 1:
-        return [pd.read_csv(data) for data in args]
-    else:
-        return pd.read_csv(args[0])
+  if len(args) > 1:
+    return [pd.read_csv(data) for data in args]
+  else:
+    return pd.read_csv(args[0])
 
 def load_from_orig_data(file_name, save_id=None):
     d = pd.read_csv(file_name)

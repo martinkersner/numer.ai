@@ -39,11 +39,6 @@ def main():
 
     #do_class_specific_train_val(settings)
 
-    #a = pd.read_csv('../submissions/1451190098.csv')
-    #b = pd.read_csv('../submissions/1451190463.csv').probability
-    #a.probability = (a.probability + b) / 2.0
-    #a.to_csv('../submissions/a.csv', columns = ('t_id', 'probability'), index = False)
-
 ###############################################################################
 def do_train_val_xgb(settings, xgb_settings):
     train, val = load_data(settings['train_csv'], settings['val_csv'])
