@@ -137,7 +137,7 @@ def print_cv_score(clf):
     As input expect ouput of GridSearchCV
     '''
     for params, mean_score, scores in clf.grid_scores_:
-        print("%0.3f (+/-%0.03f) for %r" % (mean_score, scores.std()*2, params))
+        print "{:0.3f} (+/-%{:0.03f}) for {0!r}".format(mean_score, scores.std()*2, params)
 
 def print_cv_best(clf):
     print clf.best_params_
@@ -145,3 +145,11 @@ def print_cv_best(clf):
 
 def path_join(*path):
   return os.path.join(*path)
+
+def save_settings(obj, path):
+    with open(path + '.pkl', 'wb') as f:
+        pickle.dump(obj, f)
+
+def load_settings(path):
+    with open(patht + '.pkl', 'rb') as f:
+        return pickle.load(f)

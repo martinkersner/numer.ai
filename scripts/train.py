@@ -3,6 +3,12 @@
 '''
 Martin Kersner, m.kersner@gmail.com
 2015/12/25
+
+TODO
+* save parameters
+* save dataset preprocessing steps
+* save results (auc)
+* automatic submission
 '''
 
 from tools import *
@@ -52,6 +58,8 @@ def main():
 
     n_jobs = 4 
 
+    settings['model'] = RF()
+
     settings['parameters'] = [{
         'rf__criterion': ['entropy'], 
         'rf__n_estimators': [2000],
@@ -59,8 +67,7 @@ def main():
         }]
 
     settings['subset'] = None
-
-    #settings['transformers']  = [Pipeline([ ('poly', PolynomialFeatures()), ('scaler', MinMaxScaler()) ])]
+    settings['transformers']  = [Pipeline([ ('poly', PolynomialFeatures()), ('scaler', MinMaxScaler()) ])]
 
     settings['grid_pipeline'] = Pipeline([
         ('poly', PolynomialFeatures()),
@@ -83,13 +90,13 @@ def main():
                   'eval_metric': 'auc'}
     xgb_settings['params'] = xgb_params
     
-    #do_train_val(settings)
+    do_train_val(settings)
     #do_train_test(settings)
 
     #do_train_val_gs(settings)
 
     #do_train_val_xgb(settings, xgb_settings)
-    do_train_test_xgb(settings, xgb_settings)
+    #do_train_test_xgb(settings, xgb_settings)
 
     #do_class_specific_train_val(settings)
 
@@ -137,7 +144,7 @@ def do_train_val(settings):
         X_train_val_new = transformer.fit_transform(X_train_val)
         scores = CV.cross_val_score(model, X_train_val_new, y_train_val, scoring = 'roc_auc', cv = 10, verbose = 1)	
 
-        print "%0.3f (+/-%0.03f)\n".format(scores.mean(), scores.std()*2)
+        print "{:0.3f} (+/-{:0.03f})\n".format(scores.mean(), scores.std()*2)
 
 ###############################################################################
 def do_class_specific_train_val(settings):
@@ -149,6 +156,7 @@ def do_class_specific_train_val(settings):
         print col
         settings['subset'] = col
         do_train_val_gs(settings)
+        #do_train_val(settings)
 
 ###############################################################################
 def do_train_val_gs(settings):
