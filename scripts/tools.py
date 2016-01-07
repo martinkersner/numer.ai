@@ -55,13 +55,13 @@ def load_from_orig_data(file_name, save_id=None):
     val_num = pd.concat((val.drop('c1', axis = 1), val_dummies.astype(int)), axis = 1)
 
     if save_id:
-        pandas_df2csv(train,      os.path.join('../data/', save_id, 'train_v.csv'))
-        pandas_df2csv(val,        os.path.join('../data/', save_id, 'val_v.csv'))
+        pandas_df2csv(train,      path_join('../data/', save_id, 'train_v.csv'))
+        pandas_df2csv(val,        path_join('../data/', save_id, 'val_v.csv'))
 
-        pandas_df2csv(train_num,  os.path.join('../data/', save_id, 'train_v_num.csv'))
-        pandas_df2csv(val_num,    os.path.join('../data/', save_id, 'val_v_num.csv'))
+        pandas_df2csv(train_num,  path_join('../data/', save_id, 'train_v_num.csv'))
+        pandas_df2csv(val_num,    path_join('../data/', save_id, 'val_v_num.csv'))
 
-        pandas_df2csv(pd.concat([train_num, val_num]), os.path.join('../data/', save_id, 'train_val_v_num.csv'))
+        pandas_df2csv(pd.concat([train_num, val_num]), path_join('../data/', save_id, 'train_val_v_num.csv'))
 
     return train_num, val_num 
 
@@ -73,7 +73,7 @@ def load_tournament_data(file_name, save_id=None):
     t_num = pd.concat((t.drop('c1', axis = 1), t_dummies.astype(int)), axis = 1)
 
     if save_id:
-        pandas_df2csv(t_num, os.path.join('../data/', save_id, 'tour_v_num.csv'))
+        pandas_df2csv(t_num, path_join('../data/', save_id, 'tour_v_num.csv'))
 
     return t_num
 
