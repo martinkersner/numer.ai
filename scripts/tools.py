@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 '''
 Martin Kersner, m.kersner@gmail.com
@@ -15,7 +15,6 @@ from time import time
 from sklearn.externals import joblib
 
 def blend(*args, **kwargs):
-    pass
     #submission = pd.DataFrame({'t_id': id_test, 'probability': y_pred.T})
     #a = [pd.read_csv(data).probability for data in args]
 
