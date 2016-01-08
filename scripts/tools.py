@@ -14,6 +14,8 @@ from sklearn.metrics import accuracy_score as accuracy
 from time import time
 from sklearn.externals import joblib
 
+from xgb import save_model_xgb
+
 def blend(*args, **kwargs):
   '''
   blend("sub1.csv", "sub2.csv", "sub3.csv", ..., "blend_sub.csv")
@@ -166,3 +168,15 @@ def save_settings(obj, path):
 def load_settings(path):
     with open(patht + '.pkl', 'rb') as f:
         return pickle.load(f)
+
+def xgb_save_all(t_id, y_pred, model):
+  '''
+  TODO replace constant strings with variables
+  '''
+  uniq_id = get_timestamp_str()
+  submission_path = '../submissions/' + uniq_id + '.csv'
+  model_path = '../models/' + uniq_id + '.xgb_model'
+  
+  submission = pd.DataFrame({'t_id': t_id, 'probability': y_pred.T})
+  submission.to_csv(submission_path, columns = ('t_id', 'probability'), index = False)
+  save_model_xgb(model, model_path)

@@ -20,7 +20,7 @@ from sklearn.cross_validation import train_test_split
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import classification_report
 
-from xgb import train_xgb, train_val_xgb, predict_xgb, save_model_xgb
+from xgb import train_xgb, train_val_xgb, predict_xgb
 
 from settings import *
 from xgb_settings import *
@@ -35,7 +35,7 @@ def main():
     #do_train_val_gs(settings)
 
     #do_train_val_xgb(settings, xgb_settings)
-    #do_train_test_xgb(settings, xgb_settings)
+    do_train_test_xgb(settings, xgb_settings)
 
     #do_class_specific_train_val(settings)
 
@@ -55,14 +55,8 @@ def do_train_test_xgb(settings, xgb_settings):
 
     model = train_xgb(y_train_val, X_train_val, xgb_settings)
     y_pred = predict_xgb(model, X_test)
-    
-    uniq_id = get_timestamp_str()
-    submission_path = '../submissions/' + uniq_id + '.csv'
-    model_path = '../models/' + uniq_id + '.xgb_model'
 
-    submission = pd.DataFrame({'t_id': id_test, 'probability': y_pred.T})
-    submission.to_csv(submission_path, columns = ('t_id', 'probability'), index = False)
-    save_model_xgb(model, model_path)
+    xgb_save_all(id_test, y_pred, model)
 
 ###############################################################################
 def do_train_val(settings):
