@@ -56,7 +56,7 @@ def do_train_test_xgb(settings, xgb_settings):
     model = train_xgb(y_train_val, X_train_val, xgb_settings)
     y_pred = predict_xgb(model, X_test)
 
-    xgb_save_all(id_test, y_pred, model)
+    save_all("test", id_test, y_pred, model, xgb_settings)
 
 ###############################################################################
 def do_train_val(settings):
