@@ -5,11 +5,39 @@ Martin Kersner, m.kersner@gmail.com
 2016/07/24
 '''
 
+import os
 import random
 import pandas as pd
 from sklearn.cross_validation import train_test_split
 
 from settings import *
+
+def validate_train_dataset(argv, orig=True):
+  '''
+  TODO print to STDERR
+  '''
+  if len(argv) == 2:
+    data_id = argv[1]
+    settings["data_id"] = data_id
+
+    if orig:
+      data_path = settings["data_path_orig"]
+      train_csv = settings["train_csv_orig"]
+    else:
+      data_path = settings["data_path"]
+      train_csv = settings["train_csv"]
+
+    dataset = data_path.format(data_id, train_csv)
+
+    if os.path.exists(dataset):
+      return dataset
+    else:
+      print "Dataset does not exists."
+      return False
+
+  else:
+    print "You have to specify name of dataset."
+    return False
 
 def split2Xy(data):
   y = data.target.values
