@@ -39,6 +39,12 @@ def validate_train_dataset(argv, orig=True):
     print "You have to specify name of dataset."
     return False
 
+def load_data(*args, **kwargs):
+  if len(args) > 1:
+    return [pd.read_csv(data) for data in args]
+  else:
+    return pd.read_csv(args[0])
+
 def split2Xy(data):
   y = data.target.values
   X = data.drop("target", axis = 1)
