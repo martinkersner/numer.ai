@@ -6,9 +6,11 @@ Martin Kersner, m.kersner@gmail.com
 '''
 
 import os
+from time import time
 import random
 import pandas as pd
 from sklearn.cross_validation import train_test_split
+from sklearn.externals import joblib # TOOD is it the best way to store model?
 
 from settings import *
 
@@ -77,3 +79,12 @@ def load_orig_data(file_name, to_save=False):
     test_data.to_csv(settings["data_path"].format(settings["data_id"], settings["test_csv"]), index=False)
 
   return X_train, X_test, y_train, y_test
+
+def get_timestamp_str():
+  return str(int(time()))
+
+def save_model(model, model_path):
+  joblib.dump(model, model_path)
+
+def load_model(model_path):
+  return joblib.load(model_path)
