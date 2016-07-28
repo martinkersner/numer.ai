@@ -14,10 +14,13 @@ from settings import *
 from tools import *
 
 def main():
-  path = validate_train_dataset(sys.argv)
+  if len(sys.argv) == 2:
+    path = validate_train_dataset(sys.argv[1])
+  else:
+    print "You have to specify name of dataset."
 
   if path:
-    load_orig_data(path, settings["to_save"])
+    prepare_orig_data(path, settings["to_save"])
 
 if __name__ == '__main__':
   main()

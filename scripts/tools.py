@@ -14,34 +14,46 @@ from sklearn.externals import joblib # TOOD is it the best way to store model?
 
 from settings import *
 
-def validate_train_dataset(argv, orig=True):
+def validate_train_dataset(dataset_id, orig=True):
+  return validate_dataset(dataset_id, orig=orig, train=True)
+
+def validate_test_dataset(dataset_id, orig=True):
+  return validate_dataset(dataset_id, orig=orig, test=True)
+
+def validate_dataset(dataset_id, orig=True, train=False, test=False):
   '''
   TODO print to STDERR
+  TODO train dataset should always has target feature
   '''
-  if len(argv) == 2:
-    data_id = argv[1]
-    settings["data_id"] = data_id
+  if not train and not test:
+    print "Warning: Both train and test flags were not specified. Employ train flag."
+    train = True
 
-    if orig:
-      data_path = settings["data_path_orig"]
-      train_csv = settings["train_csv_orig"]
+  settings["data_id"] = dataset_id
+
+  if orig:
+    data_path = settings["data_path_orig"]
+    if train:
+      data_csv = settings["train_csv_orig"]
     else:
-      data_path = settings["data_path"]
-      train_csv = settings["train_csv"]
-
-    dataset = data_path.format(data_id, train_csv)
-
-    if os.path.exists(dataset):
-      return dataset
-    else:
-      print "Dataset does not exists."
-      return False
-
+      data_csv = settings["test_csv_orig"]
   else:
-    print "You have to specify name of dataset."
+    data_path = settings["data_path"]
+    if train:
+      data_csv = settings["train_csv"]
+    else:
+      data_csv = settings["test_csv"]
+
+  dataset = data_path.format(dataset_id, data_csv)
+
+  # Check existence of dataset file
+  if os.path.exists(dataset):
+    return dataset
+  else:
+    print "Dataset does not exists."
     return False
 
-def load_data(*args, **kwargs):
+def load_csv(*args, **kwargs):
   if len(args) > 1:
     return [pd.read_csv(data) for data in args]
   else:
@@ -63,7 +75,7 @@ def joinXy(X, y):
 def generate_id():
   return ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(N))
 
-def load_orig_data(file_name, to_save=False):
+def prepare_orig_data(file_name, to_save=False):
   df = pd.read_csv(file_name)
 
   X, y = split2Xy(df)
