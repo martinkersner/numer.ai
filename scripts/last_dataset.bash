@@ -2,7 +2,11 @@
 # Martin Kersner, m.kersner@gmail.com
 # 2016/07/25
 
-# 578fa2f
+# ID
+# 2016-07-21 578fa2f
+# 2016-07-28 57991fc
+
+# https://datasets.numer.ai/<ID>/numerai_datasets.zip
 
 DATA_PATH="../data/"
 
@@ -14,7 +18,7 @@ DIRECTORY="$DATA_PATH""$DATASET"
 
 if [ ! -d "$DIRECTORY" ]; then
   #mkdir "$DIRECTORY"
-  echo "NEW DATASET!"
+  echo "NEW DATASET! $DATASET"
 fi
 
 rm $OUT
