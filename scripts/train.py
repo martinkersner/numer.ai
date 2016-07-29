@@ -6,6 +6,7 @@ Martin Kersner, m.kersner@gmail.com
 '''
 
 import sys
+import random
 import pandas as pd
 from sklearn import cross_validation
 import numpy as np
@@ -20,20 +21,37 @@ def main():
     print "You have to specify name of dataset."
 
   if train_path:
-    model = create_model()
+    #model = create_model()
 
-    train_dataset = load_csv(train_path)
-    model = train(model, train_dataset)
+    #train_dataset = load_csv(train_path)
+    #model = train(model, train_dataset)
 
     #test_path = validate_test_dataset(dataset_id, orig=False)
     #test_dataset = load_csv(test_path)
     #test(model, test_dataset)
 
-    model = train_all(model, dataset_id)
+    #model = train_all(model, dataset_id)
 
     tournament_path = validate_test_dataset(dataset_id, orig=True)
     tournament_dataset = load_csv(tournament_path)
-    predict_tournament(model, tournament_dataset)
+    #predict_tournament(model, tournament_dataset)
+
+    random_prediction(tournament_dataset)
+
+def random_prediction(data):
+  rand = []
+  for i in range(0, data["t_id"].count()):
+    rand.append(random.random())
+
+  data["probability"] = rand
+
+  # generate submission
+  uniq_id = get_timestamp_str()
+  submission_path = settings["submission_path"].format(uniq_id)
+
+  data.to_csv(submission_path, columns=('t_id', 'probability'), index=False)
+
+  print "ID: {}".format(uniq_id)
 
 def create_model():
   model = settings['model']
