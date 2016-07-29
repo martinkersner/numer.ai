@@ -14,7 +14,8 @@ from tools import *
 
 def main():
   if len(sys.argv) == 2:
-    train_path = validate_train_dataset(sys.argv[1], orig=False)
+    dataset_id = sys.argv[1]
+    train_path = validate_train_dataset(dataset_id, orig=False)
   else:
     print "You have to specify name of dataset."
 
@@ -22,13 +23,23 @@ def main():
     train_dataset = load_csv(train_path)
     model = train(train_dataset)
 
-    #test_path = validate_test_dataset(sys.argv[1], orig=False)
+    #test_path = validate_test_dataset(dataset_id, orig=False)
     #test_dataset = load_csv(test_path)
     #test(model, test_dataset)
 
-    tournament_path = validate_test_dataset(sys.argv[1], orig=True)
+    model = train_all(model, dataset_id)
+
+    tournament_path = validate_test_dataset(dataset_id, orig=True)
     tournament_dataset = load_csv(tournament_path)
     predict_tournament(model, tournament_dataset)
+
+def train_all(model, dataset_id):
+  path = validate_train_dataset(dataset_id, orig=True)
+  data = load_csv(path)
+  X, y = split2Xy(data)
+  model.fit(X, y)
+
+  return model
 
 def train(train_data):
   #train, test = load_data(train_path, test_path)
