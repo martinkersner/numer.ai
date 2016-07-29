@@ -11,6 +11,7 @@ import random
 import pandas as pd
 from sklearn.cross_validation import train_test_split
 from sklearn.externals import joblib # TOOD is it the best way to store model?
+import sklearn.metrics
 
 from settings import *
 
@@ -100,3 +101,6 @@ def save_model(model, model_path):
 
 def load_model(model_path):
   return joblib.load(model_path)
+
+def log_loss(y_true, y_pred):
+  return sklearn.metrics.log_loss(y_true, y_pred)

@@ -8,49 +8,66 @@ Martin Kersner, m.kersner@gmail.com
 import sys
 import pandas as pd
 from sklearn import cross_validation as CV
+import numpy as np
 
 from tools import *
 
 def main():
-  #path = validate_train_dataset(sys.argv, orig=False)
+  if len(sys.argv) == 2:
+    train_path = validate_train_dataset(sys.argv[1], orig=False)
+  else:
+    print "You have to specify name of dataset."
 
-  #if path:
-  #  dataset = load_dataset(path)
-  
-  data_id = "201607"
-  train_path = "../data/{}/train.csv".format(data_id)
-  test_path  = "../data/{}/orig/numerai_tournament_data.csv".format(data_id)
-  train_test(train_path, test_path)
+  if train_path:
+    train_dataset = load_csv(train_path)
+    model = train(train_dataset)
 
-def load_dataset(path):
-  return pd.read_csv(path)
+    test_path = validate_test_dataset(sys.argv[1], orig=False)
+    test_dataset = load_csv(test_path)
 
+    test(model, test_dataset)
 
-def train_test(train_path, test_path):
-  train, test = load_data(train_path, test_path)
+def train(train_data):
+  #train, test = load_data(train_path, test_path)
+  #transformers = settings['transformers']
 
   model = settings['model']
-  transformers = settings['transformers']
+  model.set_params(n_jobs=2)
+  model.set_params(n_estimators=1000)
 
-  X_train, y_train = split2Xy(train)
+  X, y_true = split2Xy(train_data)
+  clf = model.fit(X, y_true)
+  print clf.get_params
+  #print clf.feature_importances_
 
-  for transformer in transformers:
-    print transformer
+  #y_pred = clf.predict_proba(X)
+  #print log_loss(y_true, y_pred)
 
-    X_train_new = transformer.fit_transform(X_train)
-    X_test_new  = transformer.transform(test.drop('t_id', axis=1))
+  return clf
 
-    model.fit(X_train_new, y_train)
-    p = model.predict_proba(X_test_new)
-    test['probability'] = p[:,1] # TODO confirm the second column is correct
+  #for transformer in transformers:
+  #  print transformer
 
-    # generate 
-    uniq_id = get_timestamp_str()
-    submission_path = '../submissions/' + uniq_id + '.csv'
-    model_path = '../models/' + uniq_id + '.pkl'
+  #  X_train_new = transformer.fit_transform(X_train)
+  #  X_test_new  = transformer.transform(test.drop('t_id', axis=1))
 
-    test.to_csv(submission_path, columns=('t_id', 'probability'), index=False)
-    save_model(model, model_path)
+  #  model.fit(X_train_new, y_train)
+  #  p = model.predict_proba(X_test_new)
+  #  test['probability'] = p[:,1] # TODO confirm the second column is correct
+
+  #  # generate 
+  #  uniq_id = get_timestamp_str()
+  #  submission_path = '../submissions/' + uniq_id + '.csv'
+  #  model_path = '../models/' + uniq_id + '.pkl'
+
+  #  test.to_csv(submission_path, columns=('t_id', 'probability'), index=False)
+  #  save_model(model, model_path)
+
+def test(model, test_data):
+  X, y_true = split2Xy(test_data)
+  y_pred = model.predict_proba(X)
+
+  print log_loss(y_true, y_pred)
 
 def experiment(dataset):
   model = settings['model']
@@ -65,12 +82,6 @@ def experiment(dataset):
     #scores = CV.cross_val_score(model, X_transformed, y, scoring='roc_auc', cv=5, verbose=1)	
 
     #print "{:0.3f} (+/-{:0.03f})\n".format(scores.mean(), scores.std()*2)
-
-def train(dataset):
-  pass
-
-def apply_model(dataset, model):
-  pass
 
 if __name__ == '__main__':
   main()
