@@ -85,11 +85,13 @@ def predict_tournament(model, data):
 
   # generate submission
   uniq_id = get_timestamp_str()
-  submission_path = '../submissions/' + uniq_id + '.csv'
-  model_path      = '../models/'      + uniq_id + '.pkl'
+  submission_path = settings["submission_path"].format(uniq_id)
+  model_path      = settings["model_path"].format(uniq_id)
 
   data.to_csv(submission_path, columns=('t_id', 'probability'), index=False)
   save_model(model, model_path)
+
+  print "ID: {}".format(uniq_id)
 
 def experiment(dataset):
   model = settings['model']

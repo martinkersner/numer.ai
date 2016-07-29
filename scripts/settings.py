@@ -29,6 +29,9 @@ settings["data_path"] = "../data/{}/{}"
 settings["train_csv"] = "train.csv"
 settings["test_csv"]  = "test.csv"
 
+settings["submission_path"] = '../submissions/{}.csv'
+settings["model_path"] = '../models/{}.pkl'
+
 settings["to_save"] = True
 
 settings["test_size"] = 0.1
