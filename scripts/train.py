@@ -20,8 +20,10 @@ def main():
     print "You have to specify name of dataset."
 
   if train_path:
+    model = create_model()
+
     train_dataset = load_csv(train_path)
-    model = train(train_dataset)
+    model = train(model, train_dataset)
 
     #test_path = validate_test_dataset(dataset_id, orig=False)
     #test_dataset = load_csv(test_path)
@@ -33,6 +35,13 @@ def main():
     tournament_dataset = load_csv(tournament_path)
     predict_tournament(model, tournament_dataset)
 
+def create_model():
+  model = settings['model']
+  model.set_params(n_jobs=8)
+  model.set_params(n_estimators=100)
+
+  return model
+
 def train_all(model, dataset_id):
   path = validate_train_dataset(dataset_id, orig=True)
   data = load_csv(path)
@@ -41,13 +50,9 @@ def train_all(model, dataset_id):
 
   return model
 
-def train(train_data):
+def train(model, train_data):
   #train, test = load_data(train_path, test_path)
   #transformers = settings['transformers']
-
-  model = settings['model']
-  model.set_params(n_jobs=8)
-  model.set_params(n_estimators=100)
 
   X, y = split2Xy(train_data)
   scores = cross_validation.cross_val_score(model, X, y, cv=5, scoring='log_loss', verbose=1)
