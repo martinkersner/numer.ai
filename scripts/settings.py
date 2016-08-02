@@ -20,6 +20,8 @@ from sklearn.ensemble import RandomForestClassifier as RF
 from sklearn.ensemble import AdaBoostClassifier as AB
 from sklearn.ensemble import GradientBoostingClassifier as GB
 
+from multiprocessing import cpu_count
+
 settings = {}
 settings["data_path_orig"] = "../data/{}/orig/{}"
 settings["train_csv_orig"] = "numerai_training_data.csv"
@@ -40,3 +42,5 @@ settings["validation_size"] = 0.1
 # Training settings
 settings['model'] = RF()
 settings['transformers']  = [Pipeline([ ('poly', PolynomialFeatures()), ('scaler', MinMaxScaler()) ])]
+
+settings["cpu_num"] = cpu_count()

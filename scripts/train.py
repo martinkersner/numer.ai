@@ -55,7 +55,7 @@ def random_prediction(data):
 
 def create_model():
   model = settings['model']
-  model.set_params(n_jobs=8)
+  model.set_params(n_jobs=settings["cpu_num"]/2)
   model.set_params(n_estimators=100)
 
   return model
