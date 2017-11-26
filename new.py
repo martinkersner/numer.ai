@@ -1,5 +1,6 @@
 import collections
 import tensorflow as tf
+import types
 
 training_data = "numerai_training_data.csv"
 tournament_data = "numerai_tournament_data.csv"
@@ -62,10 +63,13 @@ defaults = collections.OrderedDict([
 ])  # pyformat: disable
 
 
-def dataset_input_fn():
-    training_data = ["numerai_training_data.csv"]
-    # dataset = tf.data.TextLineDataset(training_data).skip(1)
-    dataset = tf.data.TextLineDataset(training_data).skip(53571)
+mode = types.SimpleNamespace(train="train",
+                             valid="valid",
+                             test="test")
+
+
+def my_input_fn(file_path, shuffle=False, repeat_count=1, mode=mode.train):
+    dataset = tf.data.TextLineDataset(training_data).skip(1)
 
     def _decode_line(line):
         items = tf.decode_csv(line, list(defaults.values()))
@@ -75,32 +79,47 @@ def dataset_input_fn():
         return features_dict, label
 
     dataset = dataset.map(_decode_line)
-    dataset = dataset.shuffle(buffer_size=10000)
-    dataset = dataset.batch(32)
-    dataset = dataset.repeat(1)
-    iterator = dataset.make_one_shot_iterator()
 
+    if shuffle:
+        dataset = dataset.shuffle(buffer_size=256)
+
+    dataset = dataset.batch(32)
+    dataset = dataset.repeat(repeat_count)
+    iterator = dataset.make_one_shot_iterator()
     features, labels = iterator.get_next()
+
     return features, labels
 
 
-feature_columns = [tf.contrib.layers.real_valued_column(k) for k in defaults.keys() if "feature" in k]
+# FILE_TRAIN = "numerai_training_data.csv"
+FILE_TRAIN = "numerai_training_data_head.csv"
+FILE_TEST = "numerai_training_data_head.csv"
+
+feature_columns = [tf.feature_column.numeric_column(k) for k in defaults.keys() if "feature" in k]
+
 estimator = tf.estimator.DNNRegressor(
     feature_columns=feature_columns,
-    hidden_units=[1024, 512, 256],
+    hidden_units=[10, 10],
     optimizer=tf.train.AdamOptimizer(),
+    model_dir=".",
 )
 
 print("Training")
-estimator.train(input_fn=dataset_input_fn,
-                max_steps=10)
-
-print("Prediction")
-for i in estimator.predict(input_fn=dataset_input_fn):
-    print(i)
+estimator.train(
+    input_fn=lambda: my_input_fn(FILE_TRAIN, shuffle=True),
+    max_steps=10)
 
 print("Evaluation")
-result = estimator.evaluate(input_fn=dataset_input_fn,
-                            steps=2)
+evaluate_result = estimator.evaluate(
+    input_fn=lambda: my_input_fn(FILE_TEST, shuffle=False),
+    steps=2)
 
-print(result)
+for key in evaluate_result:
+    print("   {}: {}".format(key, evaluate_result[key]))
+
+print("Predictions")
+predict_results = estimator.predict(
+    input_fn=lambda: my_input_fn(FILE_TEST, shuffle=False),
+    )
+for prediction in predict_results:
+    print(prediction["predictions"][0])
