@@ -1,9 +1,5 @@
 import collections
 import tensorflow as tf
-import types
-
-training_data = "numerai_training_data.csv"
-tournament_data = "numerai_tournament_data.csv"
 
 defaults = collections.OrderedDict([
     ("id", [""]),
@@ -63,13 +59,9 @@ defaults = collections.OrderedDict([
 ])  # pyformat: disable
 
 
-mode = types.SimpleNamespace(train="train",
-                             valid="valid",
-                             test="test")
+tf.logging.set_verbosity(tf.logging.INFO)
 
-
-def my_input_fn(file_path, shuffle=False, repeat_count=1, mode=mode.train):
-    dataset = tf.data.TextLineDataset(training_data).skip(1)
+def my_input_fn(file_path, perform_shuffle=False, repeat_count=1):
 
     def _decode_line(line):
         items = tf.decode_csv(line, list(defaults.values()))
@@ -78,13 +70,14 @@ def my_input_fn(file_path, shuffle=False, repeat_count=1, mode=mode.train):
         label = features_dict.pop("target")
         return features_dict, label
 
+    dataset = tf.data.TextLineDataset(file_path).skip(1)
     dataset = dataset.map(_decode_line)
 
-    if shuffle:
+    if perform_shuffle:
         dataset = dataset.shuffle(buffer_size=256)
 
-    dataset = dataset.batch(32)
     dataset = dataset.repeat(repeat_count)
+    dataset = dataset.batch(32)
     iterator = dataset.make_one_shot_iterator()
     features, labels = iterator.get_next()
 
@@ -101,25 +94,19 @@ estimator = tf.estimator.DNNRegressor(
     feature_columns=feature_columns,
     hidden_units=[10, 10],
     optimizer=tf.train.AdamOptimizer(),
-    model_dir=".",
-)
+    model_dir="logdir")
 
-print("Training")
 estimator.train(
-    input_fn=lambda: my_input_fn(FILE_TRAIN, shuffle=True),
-    max_steps=10)
+    input_fn=lambda: my_input_fn(FILE_TRAIN, True, 1))
 
-print("Evaluation")
 evaluate_result = estimator.evaluate(
-    input_fn=lambda: my_input_fn(FILE_TEST, shuffle=False),
-    steps=2)
+    input_fn=lambda: my_input_fn(FILE_TEST, False, 1))
 
 for key in evaluate_result:
     print("   {}: {}".format(key, evaluate_result[key]))
 
-print("Predictions")
 predict_results = estimator.predict(
-    input_fn=lambda: my_input_fn(FILE_TEST, shuffle=False),
-    )
+    input_fn=lambda: my_input_fn(FILE_TEST, False, 1))
+
 for prediction in predict_results:
     print(prediction["predictions"][0])
